@@ -1,4 +1,4 @@
-package com.ekoapp.rxuploadservice.model
+package com.ekoapp.rxuploadservice.service
 
 import android.net.Uri
 import com.google.gson.JsonElement
