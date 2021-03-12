@@ -1,0 +1,3 @@
+include ':rxuploadservice'
+include ':app'
+rootProject.name = "My Application"
