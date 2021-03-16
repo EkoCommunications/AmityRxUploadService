@@ -18,6 +18,10 @@ class FileLocalDataStore {
         return uri.scheme == null || uri.scheme == ContentResolver.SCHEME_FILE
     }
 
+    private fun isContent(uri: Uri): Boolean {
+        return uri.scheme == ContentResolver.SCHEME_CONTENT
+    }
+
     private fun mimeTypeFromUri(context: Context, uri: Uri): String? {
         if (isFile(uri)) {
             return MimeTypeMap.getSingleton()
