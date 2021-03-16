@@ -3,6 +3,7 @@ package com.ekoapp.rxuploadservice.internal.datastore
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import io.reactivex.Completable
@@ -20,6 +21,10 @@ class FileLocalDataStore {
 
     private fun isContent(uri: Uri): Boolean {
         return uri.scheme == ContentResolver.SCHEME_CONTENT
+    }
+
+    private fun isDocument(context: Context, uri: Uri): Boolean {
+        return DocumentsContract.isDocumentUri(context, uri)
     }
 
     private fun mimeTypeFromUri(context: Context, uri: Uri): String? {
