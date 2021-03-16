@@ -12,5 +12,5 @@ fun Uri.upload(
     headers: Map<String, String> = emptyMap(),
     id: String? = null
 ): Flowable<FileProperties> {
-    return UploadFileUseCase().upload(context, action, headers, id)
+    return UploadFileUseCase().upload(context, this, action, headers, id)
 }

@@ -5,30 +5,37 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
+import java.util.*
 
 class FileLocalDataStore {
+
+    private val cacheDirectory: String = "AMITY_RX_UPLOAD_SERVICE_CACHE"
 
     private fun isFile(uri: Uri): Boolean {
         return uri.scheme == null || uri.scheme == ContentResolver.SCHEME_FILE
     }
 
-    private fun getFileMimeType(contentResolver: ContentResolver, uri: Uri): String? {
+    private fun mimeTypeFromUri(context: Context, uri: Uri): String? {
         if (isFile(uri)) {
-            val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase())
+            return MimeTypeMap.getSingleton()
+                .getMimeTypeFromExtension(
+                    MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+                        .toLowerCase(Locale.getDefault())
+                )
         }
 
-        return contentResolver.getType(uri)
+        return context.contentResolver.getType(uri)
     }
 
-    private fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
+    private fun fileNameFromUri(context: Context, uri: Uri): String? {
         if (isFile(uri)) {
             return uri.path?.let { File(it).name }
         }
 
-        contentResolver.query(
+        context.contentResolver.query(
             uri,
             null,
             null,
@@ -44,12 +51,12 @@ class FileLocalDataStore {
         return null
     }
 
-    private fun getFileSize(contentResolver: ContentResolver, uri: Uri): Long? {
+    private fun fileSizeFromUri(context: Context, uri: Uri): Long? {
         if (isFile(uri)) {
             return uri.path?.let { File(it).length() }
         }
 
-        contentResolver.query(
+        context.contentResolver.query(
             uri,
             null,
             null,
@@ -65,13 +72,24 @@ class FileLocalDataStore {
         return null
     }
 
-    private fun getPathFromUri(context: Context, uri: Uri): String? {
-        return null
+    private fun pathFromUri(context: Context, uri: Uri): String? {
+        if (isFile(uri)) {
+            return uri.path?.let { File(it).path }
+        }
+
+        return context.contentResolver.openInputStream(uri)
+            ?.use {
+                val directory = File(context.cacheDir, cacheDirectory)
+                directory.mkdirs()
+                val output = File(directory, UUID.randomUUID().toString())
+                it.copyTo(output.outputStream())
+                output.absolutePath
+            }
     }
 
-    fun getFileMimeType(context: Context, uri: Uri): Single<String> {
+    fun getMimeType(context: Context, uri: Uri): Single<String> {
         return Single.fromPublisher {
-            getFileMimeType(context.contentResolver, uri)
+            mimeTypeFromUri(context, uri)
                 ?.let { mimeType ->
                     it.onNext(mimeType)
                     it.onComplete()
@@ -81,7 +99,7 @@ class FileLocalDataStore {
 
     fun getFileName(context: Context, uri: Uri): Single<String> {
         return Single.fromPublisher {
-            getFileName(context.contentResolver, uri)
+            fileNameFromUri(context, uri)
                 ?.let { fileName ->
                     it.onNext(fileName)
                     it.onComplete()
@@ -91,7 +109,7 @@ class FileLocalDataStore {
 
     fun getFileSize(context: Context, uri: Uri): Single<Long> {
         return Single.fromPublisher {
-            getFileSize(context.contentResolver, uri)
+            fileSizeFromUri(context, uri)
                 ?.let { fileSize ->
                     it.onNext(fileSize)
                     it.onComplete()
@@ -101,11 +119,18 @@ class FileLocalDataStore {
 
     fun getFilePath(context: Context, uri: Uri): Single<String> {
         return Single.fromPublisher {
-            getPathFromUri(context, uri)
+            pathFromUri(context, uri)
                 ?.let { path ->
                     it.onNext(path)
                     it.onComplete()
                 }
+        }
+    }
+
+    fun clearCache(context: Context): Completable {
+        return Completable.fromAction {
+            val directory = File(context.cacheDir, cacheDirectory)
+            directory.deleteRecursively()
         }
     }
 }
