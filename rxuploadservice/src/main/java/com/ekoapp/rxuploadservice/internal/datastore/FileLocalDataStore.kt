@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.util.Log
 import android.webkit.MimeTypeMap
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -16,6 +17,7 @@ class FileLocalDataStore {
     private val cacheDirectory: String = "AMITY_RX_UPLOAD_SERVICE_CACHE"
 
     private fun isFile(uri: Uri): Boolean {
+        Log.e("testtest", "scheme:${uri.scheme}")
         return uri.scheme == null || uri.scheme == ContentResolver.SCHEME_FILE
     }
 
@@ -81,19 +83,52 @@ class FileLocalDataStore {
         return null
     }
 
-    private fun pathFromUri(context: Context, uri: Uri): String? {
+    private fun byteArrayFromUri(context: Context, uri: Uri) {
+        Log.e("testtest", "uri:${uri.path}")
+
         if (isFile(uri)) {
-            return uri.path?.let { File(it).path }
+            val readBytes = uri.path?.let { File(it).readBytes() }
+            Log.e("testtest", "readBytes:${readBytes?.size}")
         }
 
-        return context.contentResolver.openInputStream(uri)
+        val readBytes = context.contentResolver.openInputStream(uri)?.readBytes()
+        Log.e("testtest", "readBytes:${readBytes?.size}")
+    }
+
+    private fun fileFromUri(context: Context, uri: Uri) {
+        Log.e("testtest", "uri:${uri.path}")
+
+        if (isFile(uri)) {
+            val file = uri.path?.let { File(it) }
+            Log.e(
+                "testtest",
+                String.format(
+                    "path:%s absolutePath:%s exists:%s",
+                    file?.path,
+                    file?.absolutePath,
+                    file?.exists()
+                )
+            )
+        }
+
+        val file = context.contentResolver.openInputStream(uri)
             ?.use {
                 val directory = File(context.cacheDir, cacheDirectory)
                 directory.mkdirs()
                 val output = File(directory, UUID.randomUUID().toString())
                 it.copyTo(output.outputStream())
-                output.absolutePath
+                output
             }
+
+        Log.e(
+            "testtest",
+            String.format(
+                "path:%s absolutePath:%s exists:%s",
+                file?.path,
+                file?.absolutePath,
+                file?.exists()
+            )
+        )
     }
 
     fun getMimeType(context: Context, uri: Uri): Single<String> {
@@ -121,16 +156,6 @@ class FileLocalDataStore {
             fileSizeFromUri(context, uri)
                 ?.let { fileSize ->
                     it.onNext(fileSize)
-                    it.onComplete()
-                }
-        }
-    }
-
-    fun getFilePath(context: Context, uri: Uri): Single<String> {
-        return Single.fromPublisher {
-            pathFromUri(context, uri)
-                ?.let { path ->
-                    it.onNext(path)
                     it.onComplete()
                 }
         }
