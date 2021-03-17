@@ -9,6 +9,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import okio.BufferedSink
@@ -27,7 +28,8 @@ class FileRemoteDataStore {
         file: File,
         fileProperties: FileProperties,
         action: String,
-        headers: Map<String, String> = emptyMap(),
+        headers: Map<String, String>,
+        params: Map<String, String>,
         id: String? = null
     ): Flowable<FileProperties> {
         return Flowable.fromPublisher<FileProperties> {
@@ -54,7 +56,7 @@ class FileRemoteDataStore {
 
             val multipartUploadApi: MultipartUploadApi? = null
             val call = multipartUploadApi
-                ?.upload(action, headers, multipartBody)
+                ?.upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
 
             call?.enqueue(object : Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {

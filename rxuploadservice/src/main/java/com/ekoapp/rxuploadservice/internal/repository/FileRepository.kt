@@ -15,7 +15,8 @@ class FileRepository {
         context: Context,
         uri: Uri,
         action: String,
-        headers: Map<String, String> = emptyMap(),
+        headers: Map<String, String>,
+        params: Map<String, String>,
         id: String? = null
     ): Flowable<FileProperties> {
         val localDataStore = FileLocalDataStore()
@@ -40,6 +41,7 @@ class FileRepository {
                                 properties,
                                 action,
                                 headers,
+                                params,
                                 id
                             )
                         }
