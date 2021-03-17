@@ -6,7 +6,6 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
-import android.webkit.MimeTypeMap
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
@@ -17,7 +16,6 @@ class FileLocalDataStore {
     private val cacheDirectory: String = "AMITY_RX_UPLOAD_SERVICE_CACHE"
 
     private fun isFile(uri: Uri): Boolean {
-        Log.e("testtest", "scheme:${uri.scheme}")
         return uri.scheme == null || uri.scheme == ContentResolver.SCHEME_FILE
     }
 
@@ -30,22 +28,10 @@ class FileLocalDataStore {
     }
 
     private fun mimeTypeFromUri(context: Context, uri: Uri): String? {
-        if (isFile(uri)) {
-            return MimeTypeMap.getSingleton()
-                .getMimeTypeFromExtension(
-                    MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-                        .toLowerCase(Locale.getDefault())
-                )
-        }
-
         return context.contentResolver.getType(uri)
     }
 
     private fun fileNameFromUri(context: Context, uri: Uri): String? {
-        if (isFile(uri)) {
-            return uri.path?.let { File(it).name }
-        }
-
         context.contentResolver.query(
             uri,
             null,
@@ -63,10 +49,6 @@ class FileLocalDataStore {
     }
 
     private fun fileSizeFromUri(context: Context, uri: Uri): Long? {
-        if (isFile(uri)) {
-            return uri.path?.let { File(it).length() }
-        }
-
         context.contentResolver.query(
             uri,
             null,
@@ -83,35 +65,8 @@ class FileLocalDataStore {
         return null
     }
 
-    private fun byteArrayFromUri(context: Context, uri: Uri) {
-        Log.e("testtest", "uri:${uri.path}")
-
-        if (isFile(uri)) {
-            val readBytes = uri.path?.let { File(it).readBytes() }
-            Log.e("testtest", "readBytes:${readBytes?.size}")
-        }
-
-        val readBytes = context.contentResolver.openInputStream(uri)?.readBytes()
-        Log.e("testtest", "readBytes:${readBytes?.size}")
-    }
-
-    private fun fileFromUri(context: Context, uri: Uri) {
-        Log.e("testtest", "uri:${uri.path}")
-
-        if (isFile(uri)) {
-            val file = uri.path?.let { File(it) }
-            Log.e(
-                "testtest",
-                String.format(
-                    "path:%s absolutePath:%s exists:%s",
-                    file?.path,
-                    file?.absolutePath,
-                    file?.exists()
-                )
-            )
-        }
-
-        val file = context.contentResolver.openInputStream(uri)
+    private fun fileFromUri(context: Context, uri: Uri): File? {
+        return context.contentResolver.openInputStream(uri)
             ?.use {
                 val directory = File(context.cacheDir, cacheDirectory)
                 directory.mkdirs()
@@ -119,22 +74,13 @@ class FileLocalDataStore {
                 it.copyTo(output.outputStream())
                 output
             }
-
-        Log.e(
-            "testtest",
-            String.format(
-                "path:%s absolutePath:%s exists:%s",
-                file?.path,
-                file?.absolutePath,
-                file?.exists()
-            )
-        )
     }
 
     fun getMimeType(context: Context, uri: Uri): Single<String> {
         return Single.fromPublisher {
             mimeTypeFromUri(context, uri)
                 ?.let { mimeType ->
+                    Log.e("testtest", "mimeType:$mimeType")
                     it.onNext(mimeType)
                     it.onComplete()
                 }
@@ -145,6 +91,7 @@ class FileLocalDataStore {
         return Single.fromPublisher {
             fileNameFromUri(context, uri)
                 ?.let { fileName ->
+                    Log.e("testtest", "fileName:$fileName")
                     it.onNext(fileName)
                     it.onComplete()
                 }
@@ -155,9 +102,45 @@ class FileLocalDataStore {
         return Single.fromPublisher {
             fileSizeFromUri(context, uri)
                 ?.let { fileSize ->
+                    Log.e("testtest", "fileSize:$fileSize")
                     it.onNext(fileSize)
                     it.onComplete()
                 }
+        }
+    }
+
+    fun getFile(context: Context, uri: Uri): Single<File> {
+        return Single.fromPublisher {
+            fileFromUri(context, uri)
+                ?.let { file ->
+                    Log.e(
+                        "testtest",
+                        String.format(
+                            "path:%s absolutePath:%s exists:%s",
+                            file.path,
+                            file.absolutePath,
+                            file.exists()
+                        )
+                    )
+                    it.onNext(file)
+                    it.onComplete()
+                }
+        }
+    }
+
+    fun test(context: Context, uri: Uri): Completable {
+        return Completable.fromAction {
+            Log.e("testtest", "uri:${uri.path}")
+            Log.e("testtest", "uri:$uri")
+            Log.e(
+                "testtest",
+                String.format(
+                    "isFile:%s isContent:%s :isDocument:%s",
+                    isFile(uri),
+                    isContent(uri),
+                    isDocument(context, uri)
+                )
+            )
         }
     }
 
@@ -165,6 +148,7 @@ class FileLocalDataStore {
         return Completable.fromAction {
             val directory = File(context.cacheDir, cacheDirectory)
             directory.deleteRecursively()
+            Log.e("testtest", "deleteRecursively")
         }
     }
 }

@@ -6,11 +6,11 @@ import com.google.gson.JsonNull
 
 data class FileProperties(
     val uri: Uri,
-    val fileSize: Int,
+    val fileSize: Long,
     val fileName: String,
     val mimeType: String,
-    val bytesWritten: Long = 0,
-    val contentLength: Long = 0,
-    val progress: Int = 0,
-    val responseBody: JsonElement = JsonNull.INSTANCE
+    var bytesWritten: Long = 0,
+    var contentLength: Long = 0,
+    var progress: Int = 0,
+    var responseBody: JsonElement = JsonNull.INSTANCE
 )

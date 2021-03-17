@@ -6,6 +6,8 @@ import com.ekoapp.rxuploadservice.internal.datastore.FileLocalDataStore
 import com.ekoapp.rxuploadservice.internal.datastore.FileRemoteDataStore
 import com.ekoapp.rxuploadservice.service.FileProperties
 import io.reactivex.Flowable
+import io.reactivex.Single
+import io.reactivex.functions.Function3
 
 class FileRepository {
 
@@ -18,6 +20,29 @@ class FileRepository {
     ): Flowable<FileProperties> {
         val localDataStore = FileLocalDataStore()
         val remoteDataStore = FileRemoteDataStore()
-        return Flowable.never()
+        return localDataStore.test(context, uri)
+            .andThen(Single.zip(localDataStore.getFileName(context, uri),
+                localDataStore.getFileSize(context, uri),
+                localDataStore.getMimeType(context, uri),
+                Function3<String, Long, String, FileProperties> { fileName, fileSize, mimeType ->
+                    FileProperties(
+                        uri,
+                        fileSize,
+                        fileName,
+                        mimeType
+                    )
+                })
+                .flatMapPublisher { properties ->
+                    localDataStore.getFile(context, uri)
+                        .flatMapPublisher {
+                            remoteDataStore.upload(
+                                it,
+                                properties,
+                                action,
+                                headers,
+                                id
+                            )
+                        }
+                }).mergeWith(localDataStore.clearCache(context))
     }
 }
