@@ -1,9 +1,8 @@
-package com.ekoapp.rxuploadservice.internal.usecase
+package com.ekoapp.rxuploadservice
 
 import android.content.Context
 import android.net.Uri
 import com.ekoapp.rxuploadservice.internal.repository.FileRepository
-import com.ekoapp.rxuploadservice.service.FileProperties
 import io.reactivex.Flowable
 
 class UploadFileUseCase {

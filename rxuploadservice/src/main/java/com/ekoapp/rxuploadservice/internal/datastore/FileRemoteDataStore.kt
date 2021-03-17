@@ -1,6 +1,7 @@
 package com.ekoapp.rxuploadservice.internal.datastore
 
-import com.ekoapp.rxuploadservice.service.FileProperties
+import com.ekoapp.rxuploadservice.FileProperties
+import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import com.ekoapp.rxuploadservice.service.api.MultipartUploadApi
 import com.google.gson.JsonPrimitive
 import io.reactivex.Flowable
@@ -54,11 +55,11 @@ class FileRemoteDataStore {
                 requestBody
             )
 
-            val multipartUploadApi: MultipartUploadApi? = null
+            val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
             val call = multipartUploadApi
-                ?.upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
+                .upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
 
-            call?.enqueue(object : Callback<ResponseBody> {
+            call.enqueue(object : Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                     it.onError(t)
                     it.onComplete()

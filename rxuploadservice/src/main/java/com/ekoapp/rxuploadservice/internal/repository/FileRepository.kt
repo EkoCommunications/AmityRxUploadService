@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.ekoapp.rxuploadservice.internal.datastore.FileLocalDataStore
 import com.ekoapp.rxuploadservice.internal.datastore.FileRemoteDataStore
-import com.ekoapp.rxuploadservice.service.FileProperties
+import com.ekoapp.rxuploadservice.FileProperties
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.functions.Function3
