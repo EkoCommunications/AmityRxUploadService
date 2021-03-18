@@ -1,9 +1,9 @@
 package com.ekoapp.rxuploadservice
 
 import com.ekoapp.rxuploadservice.service.MultipartUploadService
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import okhttp3.Interceptor
-
 
 class RxUploadService {
 
@@ -14,11 +14,12 @@ class RxUploadService {
         }
 
         fun properties(id: String): Flowable<FileProperties> {
-            return Flowable.never()
+            return MultipartUploadService.properties(id)?.toFlowable(BackpressureStrategy.BUFFER)
+                ?: run { Flowable.never<FileProperties>() }
         }
 
         fun cancel(id: String) {
-
+            MultipartUploadService.cancel(id)
         }
     }
 }

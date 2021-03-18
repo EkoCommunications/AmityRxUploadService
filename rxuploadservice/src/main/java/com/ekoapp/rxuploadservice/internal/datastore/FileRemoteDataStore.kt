@@ -39,12 +39,24 @@ class FileRemoteDataStore {
             requestBody.asProgressRequestBody(object :
                 FileWritingListener {
                 override fun onWrite(bytesWritten: Long, contentLength: Long) {
+                    val progress = min(
+                        floor(
+                            bytesWritten.toDouble()
+                                    / contentLength.toDouble()
+                                    * 100.toDouble()
+                        ).toInt(), 100
+                    )
+
                     it.onNext(fileProperties.apply {
                         this.bytesWritten = bytesWritten
                         this.contentLength = contentLength
+                        this.progress = progress
+                    })
 
-                        val progress = floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt()
-                        this.progress = min(progress, 100)
+                    MultipartUploadService.properties(id)?.onNext(fileProperties.apply {
+                        this.bytesWritten = bytesWritten
+                        this.contentLength = contentLength
+                        this.progress = progress
                     })
                 }
             })
@@ -56,13 +68,16 @@ class FileRemoteDataStore {
             )
 
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
+
             val call = multipartUploadApi
                 .upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
 
+            MultipartUploadService.onRequest(call, id)
             call.enqueue(object : Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                     it.onError(t)
                     it.onComplete()
+                    MultipartUploadService.onFailure(id)
                 }
 
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -73,6 +88,7 @@ class FileRemoteDataStore {
                     })
 
                     it.onComplete()
+                    MultipartUploadService.onResponse(id)
                 }
             })
         }
