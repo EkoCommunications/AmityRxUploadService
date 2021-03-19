@@ -10,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import okio.BufferedSink
@@ -65,7 +66,7 @@ class FileRemoteDataStore {
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
 
             val call = multipartUploadApi
-                .upload(action, headers, multipartBody/*, params.mapValues { param -> param.value.toRequestBody() }*/)
+                .upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
 
             MultipartUploadService.onRequest(call, id)
 
