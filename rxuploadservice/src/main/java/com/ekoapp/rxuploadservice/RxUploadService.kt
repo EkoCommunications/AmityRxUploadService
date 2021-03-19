@@ -8,6 +8,7 @@ import okhttp3.Interceptor
 private const val DEFAULT_CONNECT_TIMEOUT_MILLIS: Long = 30 * 1000
 private const val DEFAULT_READ_TIMEOUT_MILLIS: Long = 60 * 1000
 private const val DEFAULT_WRITE_TIMEOUT_MILLIS: Long = 10 * 60 * 1000
+private const val DEFAULT_MAXIMUM_FILE_SIZE: Int = 1000 * 1000 * 1000
 
 class RxUploadService {
 
@@ -43,6 +44,7 @@ class RxUploadService {
             private var connectTimeOutMillis = DEFAULT_CONNECT_TIMEOUT_MILLIS
             private var readTimeOutMillis = DEFAULT_READ_TIMEOUT_MILLIS
             private var writeTimeOutMillis = DEFAULT_WRITE_TIMEOUT_MILLIS
+            private var maximumFileSize = DEFAULT_MAXIMUM_FILE_SIZE
 
             fun connectTimeOut(connectTimeOutMillis: Long): Builder {
                 this.connectTimeOutMillis = connectTimeOutMillis
@@ -56,6 +58,11 @@ class RxUploadService {
 
             fun writeTimeOutMillis(writeTimeOutMillis: Long): Builder {
                 this.writeTimeOutMillis = writeTimeOutMillis
+                return this
+            }
+
+            fun maximumFileSize(maximumFileSize: Int): Builder {
+                this.maximumFileSize = maximumFileSize
                 return this
             }
 
