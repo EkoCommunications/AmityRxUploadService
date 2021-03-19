@@ -29,8 +29,8 @@ class FileRemoteDataStore {
         file: File,
         fileProperties: FileProperties,
         path: String,
-        headers: Map<String, String>,
-        params: Map<String, String>,
+        headers: Map<String, Any>,
+        params: Map<String, Any>,
         id: String? = null
     ): Flowable<FileProperties> {
         return Flowable.fromPublisher<FileProperties> {
@@ -66,7 +66,11 @@ class FileRemoteDataStore {
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
 
             val call = multipartUploadApi
-                .upload(path, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
+                .upload(
+                    path,
+                    headers,
+                    multipartBody,
+                    params.mapValues { param -> param.value.toString().toRequestBody() })
 
             MultipartUploadService.onRequest(call, id)
 
