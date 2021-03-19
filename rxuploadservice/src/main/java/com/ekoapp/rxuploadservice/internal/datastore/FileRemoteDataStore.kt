@@ -65,12 +65,11 @@ class FileRemoteDataStore {
 
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
 
-            val call = multipartUploadApi
-                .upload(
-                    path,
-                    headers,
-                    multipartBody,
-                    params.mapValues { param -> param.value.toString().toRequestBody() })
+            val call = multipartUploadApi.upload(
+                path,
+                headers,
+                multipartBody,
+                params.mapValues { param -> param.value.toString().toRequestBody() })
 
             MultipartUploadService.onRequest(call, id)
 
