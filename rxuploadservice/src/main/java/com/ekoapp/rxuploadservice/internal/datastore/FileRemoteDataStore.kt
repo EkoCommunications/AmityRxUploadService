@@ -3,7 +3,7 @@ package com.ekoapp.rxuploadservice.internal.datastore
 import com.ekoapp.rxuploadservice.FileProperties
 import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import com.ekoapp.rxuploadservice.service.api.MultipartUploadApi
-import com.google.gson.JsonPrimitive
+import com.google.gson.JsonParser
 import io.reactivex.Flowable
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
@@ -34,26 +34,27 @@ class FileRemoteDataStore {
     ): Flowable<FileProperties> {
         return Flowable.fromPublisher<FileProperties> {
             val mediaType = fileProperties.mimeType.toMediaType()
-            val requestBody = file.asRequestBody(mediaType)
-            requestBody.asProgressRequestBody(object :
-                FileWritingListener {
-                override fun onWrite(bytesWritten: Long, contentLength: Long) {
-                    val progress =
-                        min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 100)
+            val requestBody = file
+                .asRequestBody(mediaType)
+                .asProgressRequestBody(object :
+                    FileWritingListener {
+                    override fun onWrite(bytesWritten: Long, contentLength: Long) {
+                        val progress =
+                            min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 100)
 
-                    it.onNext(fileProperties.apply {
-                        this.bytesWritten = bytesWritten
-                        this.contentLength = contentLength
-                        this.progress = progress
-                    })
+                        it.onNext(fileProperties.apply {
+                            this.bytesWritten = bytesWritten
+                            this.contentLength = contentLength
+                            this.progress = progress
+                        })
 
-                    MultipartUploadService.properties(id)?.onNext(fileProperties.apply {
-                        this.bytesWritten = bytesWritten
-                        this.contentLength = contentLength
-                        this.progress = progress
-                    })
-                }
-            })
+                        MultipartUploadService.properties(id)?.onNext(fileProperties.apply {
+                            this.bytesWritten = bytesWritten
+                            this.contentLength = contentLength
+                            this.progress = progress
+                        })
+                    }
+                })
 
             val multipartBody = MultipartBody.Part.createFormData(
                 "file",
@@ -67,6 +68,7 @@ class FileRemoteDataStore {
                 .upload(action, headers, multipartBody/*, params.mapValues { param -> param.value.toRequestBody() }*/)
 
             MultipartUploadService.onRequest(call, id)
+
             call.enqueue(object : Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                     it.onError(t)
@@ -80,7 +82,7 @@ class FileRemoteDataStore {
                     } ?: run {
                         it.onNext(fileProperties.apply {
                             response.body()?.string().let { jsonString ->
-                                this.responseBody = JsonPrimitive(jsonString)
+                                this.responseBody = JsonParser.parseString(jsonString)
                             }
                         })
                     }

@@ -33,12 +33,12 @@ class FileRepository {
                         mimeType
                     )
                 })
-                .flatMapPublisher { properties ->
+                .flatMapPublisher { fileProperties ->
                     localDataStore.getFile(context, uri)
                         .flatMapPublisher {
                             remoteDataStore.upload(
                                 it,
-                                properties,
+                                fileProperties,
                                 action,
                                 headers,
                                 params,
