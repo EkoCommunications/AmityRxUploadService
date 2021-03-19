@@ -2,8 +2,8 @@ package com.ekoapp.rxuploadservice.extension
 
 import android.content.Context
 import android.net.Uri
-import com.ekoapp.rxuploadservice.UploadFileUseCase
 import com.ekoapp.rxuploadservice.FileProperties
+import com.ekoapp.rxuploadservice.UploadFileUseCase
 import io.reactivex.Flowable
 
 fun Uri.upload(
@@ -13,6 +13,5 @@ fun Uri.upload(
     params: Map<String, String> = emptyMap(),
     id: String? = null
 ): Flowable<FileProperties> {
-    return UploadFileUseCase()
-        .upload(context, this, action, headers, params, id)
+    return UploadFileUseCase().upload(context, this, action, headers, params, id)
 }
