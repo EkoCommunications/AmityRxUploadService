@@ -45,6 +45,6 @@ class FileRepository {
                                 id
                             )
                         }
-                })
+                }).distinct { it.progress }
     }
 }

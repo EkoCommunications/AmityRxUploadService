@@ -93,6 +93,11 @@ class MainActivity : AppCompatActivity() {
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
                 startActivityForResult(intent, 0)
             }
+
+        findViewById<AppCompatButton>(R.id.cancel_button)
+            .setOnClickListener {
+                RxUploadService.cancel(id)
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -113,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                     .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
                     .doOnError { Log.e("testtest", "doOnError:" + it.message) }
-                    .subscribe()
+                    .subscribe({}, {})
 
                 RxUploadService.properties(id)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -121,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                         findViewById<AppCompatTextView>(R.id.progress_text_view_2).text =
                             String.format("%s/100", it.progress)
                     }
-                    .subscribe()
+                    .subscribe({}, {})
             }
         }
     }
