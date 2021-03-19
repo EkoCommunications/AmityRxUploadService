@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import com.ekoapp.rxuploadservice.RxUploadService
 import com.ekoapp.rxuploadservice.extension.upload
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.reactivex.Maybe
@@ -20,10 +22,13 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var accessToken: String
+    private val deviceId = UUID.randomUUID().toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        RxUploadService.init("https://sea-staging-h1.ekoapp.com")
 
         findViewById<AppCompatButton>(R.id.sign_in_button)
             .setOnClickListener {
@@ -31,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                     val json = JsonObject()
                     json.addProperty("username", "c10")
                     json.addProperty("password", "password")
-                    json.addProperty("deviceId", UUID.randomUUID().toString())
+                    json.addProperty("deviceId", deviceId)
                     json.addProperty("deviceVersion", "android")
                     json.addProperty("deviceType", "android")
                     json.addProperty("deviceModel", "android")
@@ -90,8 +95,13 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            data?.data?.let {
-                it.upload(this, "test")
+            data?.data?.let { uri ->
+                uri.upload(
+                    context = this,
+                    action = "upload-file",
+                    headers = mapOf("x-eko-access-token" to accessToken)
+                )
+                    .doOnNext { Log.e("testtest", Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
                     .doOnError { Log.e("testtest", "doOnError:" + it.message) }
                     .subscribe()

@@ -10,7 +10,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import okio.BufferedSink
@@ -39,13 +38,8 @@ class FileRemoteDataStore {
             requestBody.asProgressRequestBody(object :
                 FileWritingListener {
                 override fun onWrite(bytesWritten: Long, contentLength: Long) {
-                    val progress = min(
-                        floor(
-                            bytesWritten.toDouble()
-                                    / contentLength.toDouble()
-                                    * 100.toDouble()
-                        ).toInt(), 100
-                    )
+                    val progress =
+                        min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 100)
 
                     it.onNext(fileProperties.apply {
                         this.bytesWritten = bytesWritten
@@ -70,7 +64,7 @@ class FileRemoteDataStore {
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
 
             val call = multipartUploadApi
-                .upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
+                .upload(action, headers, multipartBody/*, params.mapValues { param -> param.value.toRequestBody() }*/)
 
             MultipartUploadService.onRequest(call, id)
             call.enqueue(object : Callback<ResponseBody> {
@@ -81,11 +75,15 @@ class FileRemoteDataStore {
                 }
 
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    it.onNext(fileProperties.apply {
-                        response.body()?.string().let { jsonString ->
-                            this.responseBody = JsonPrimitive(jsonString)
-                        }
-                    })
+                    response.errorBody()?.let { error ->
+                        it.onError(Exception(String.format("code:%s errorBody:%s", response.code(), error.string())))
+                    } ?: run {
+                        it.onNext(fileProperties.apply {
+                            response.body()?.string().let { jsonString ->
+                                this.responseBody = JsonPrimitive(jsonString)
+                            }
+                        })
+                    }
 
                     it.onComplete()
                     MultipartUploadService.onResponse(id)

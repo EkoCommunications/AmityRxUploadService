@@ -7,6 +7,7 @@ import com.ekoapp.rxuploadservice.internal.datastore.FileLocalDataStore
 import com.ekoapp.rxuploadservice.internal.datastore.FileRemoteDataStore
 import io.reactivex.Flowable
 import io.reactivex.Single
+import io.reactivex.functions.Function
 import io.reactivex.functions.Function3
 
 class FileRepository {
@@ -45,6 +46,14 @@ class FileRepository {
                                 id
                             )
                         }
-                }).mergeWith(localDataStore.clearCache(context))
+                })
+            .flatMap {
+                localDataStore.clearCache(context)
+                    .andThen(Flowable.just(it))
+            }
+            .onErrorResumeNext(Function {
+                localDataStore.clearCache(context)
+                    .andThen(Flowable.error(it))
+            })
     }
 }
