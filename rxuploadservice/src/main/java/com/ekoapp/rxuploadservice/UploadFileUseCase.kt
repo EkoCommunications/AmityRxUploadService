@@ -2,11 +2,13 @@ package com.ekoapp.rxuploadservice
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.WorkerThread
 import com.ekoapp.rxuploadservice.internal.repository.FileRepository
 import io.reactivex.Flowable
 
 class UploadFileUseCase {
 
+    @WorkerThread
     fun upload(
         context: Context,
         uri: Uri,
