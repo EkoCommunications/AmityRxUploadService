@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatTextView
 import com.ekoapp.rxuploadservice.RxUploadService
 import com.ekoapp.rxuploadservice.extension.upload
 import com.google.gson.Gson
@@ -22,6 +23,8 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var accessToken: String
+
+    private val id = UUID.randomUUID().toString()
     private val deviceId = UUID.randomUUID().toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,11 +102,25 @@ class MainActivity : AppCompatActivity() {
                 uri.upload(
                     context = this,
                     path = "file/upload-file",
-                    headers = mapOf("x-eko-access-token" to accessToken)
+                    headers = mapOf("x-eko-access-token" to accessToken),
+                    id = id
                 )
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext {
+                        findViewById<AppCompatTextView>(R.id.progress_text_view).text =
+                            String.format("%s/100", it.progress)
+                    }
                     .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
                     .doOnError { Log.e("testtest", "doOnError:" + it.message) }
+                    .subscribe()
+
+                RxUploadService.properties(id)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext {
+                        findViewById<AppCompatTextView>(R.id.progress_text_view_2).text =
+                            String.format("%s/100", it.progress)
+                    }
                     .subscribe()
             }
         }

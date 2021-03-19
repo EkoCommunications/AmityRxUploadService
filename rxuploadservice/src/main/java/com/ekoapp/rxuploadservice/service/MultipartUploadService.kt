@@ -49,7 +49,7 @@ class MultipartUploadService {
 
         fun onRequest(call: Call<ResponseBody>, id: String?) {
             id?.let {
-                propertiesSubjects[it] = PublishSubject.create()
+                propertiesSubjects[it] = propertiesSubjects[it] ?: PublishSubject.create<FileProperties>()
                 calls[it] = call
             }
         }
@@ -69,7 +69,10 @@ class MultipartUploadService {
         }
 
         fun properties(id: String?): PublishSubject<FileProperties>? {
-            return propertiesSubjects[id]
+            return id?.let {
+                propertiesSubjects[it] = propertiesSubjects[it] ?: PublishSubject.create<FileProperties>()
+                propertiesSubjects[it]
+            }
         }
 
         fun cancel(id: String) {
