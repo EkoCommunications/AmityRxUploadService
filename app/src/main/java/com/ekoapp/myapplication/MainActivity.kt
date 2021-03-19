@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                     action = "upload-file",
                     headers = mapOf("x-eko-access-token" to accessToken)
                 )
-                    .doOnNext { Log.e("testtest", Gson().toJson(it)) }
+                    .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
                     .doOnError { Log.e("testtest", "doOnError:" + it.message) }
                     .subscribe()

@@ -10,12 +10,17 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 private lateinit var retrofit: Retrofit
 
 class MultipartUploadService {
 
     companion object {
+
+        private const val CONNECT_TIMEOUT_MILLIS = 30 * 1000
+        private const val READ_TIMEOUT_MILLIS = 60 * 1000
+        private const val WRITE_TIMEOUT_MILLIS = 10 * 60 * 1000
 
         private val calls = mutableMapOf<String, Call<ResponseBody>>()
         private val propertiesSubjects = mutableMapOf<String, PublishSubject<FileProperties>>()
@@ -27,6 +32,9 @@ class MultipartUploadService {
                         it.addInterceptor(interceptor)
                     }
                 }
+                .connectTimeout(CONNECT_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
+                .readTimeout(READ_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
+                .writeTimeout(WRITE_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
                 .build()
 
             retrofit = Retrofit.Builder()
