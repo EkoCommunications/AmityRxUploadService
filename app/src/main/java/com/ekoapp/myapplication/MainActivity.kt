@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity() {
                     .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
                     .doOnError { Log.e("testtest", "doOnError:" + it.message) }
+                    .subscribeOn(Schedulers.io())
                     .subscribe({}, {})
 
                 RxUploadService.properties(id)
@@ -126,6 +127,7 @@ class MainActivity : AppCompatActivity() {
                         findViewById<AppCompatTextView>(R.id.progress_text_view_2).text =
                             String.format("%s/100", it.progress)
                     }
+                    .subscribeOn(Schedulers.io())
                     .subscribe({}, {})
             }
         }
