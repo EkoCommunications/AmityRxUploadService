@@ -11,9 +11,9 @@ interface MultipartUploadApi {
     // https://github.com/square/retrofit/issues/3275
     @JvmSuppressWildcards
     @Multipart
-    @POST("/file/{action}")
+    @POST("{path}")
     fun upload(
-        @Path("action") action: String,
+        @Path("path", encoded = true) path: String,
         @HeaderMap headers: Map<String, String>,
         @Part body: MultipartBody.Part,
         @PartMap params: Map<String, RequestBody>

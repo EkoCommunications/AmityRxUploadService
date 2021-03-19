@@ -28,7 +28,7 @@ class FileRemoteDataStore {
     fun upload(
         file: File,
         fileProperties: FileProperties,
-        action: String,
+        path: String,
         headers: Map<String, String>,
         params: Map<String, String>,
         id: String? = null
@@ -66,7 +66,7 @@ class FileRemoteDataStore {
             val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
 
             val call = multipartUploadApi
-                .upload(action, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
+                .upload(path, headers, multipartBody, params.mapValues { param -> param.value.toRequestBody() })
 
             MultipartUploadService.onRequest(call, id)
 

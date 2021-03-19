@@ -8,10 +8,10 @@ import io.reactivex.Flowable
 
 fun Uri.upload(
     context: Context,
-    action: String,
+    path: String,
     headers: Map<String, String> = emptyMap(),
     params: Map<String, String> = emptyMap(),
     id: String? = null
 ): Flowable<FileProperties> {
-    return UploadFileUseCase().upload(context, this, action, headers, params, id)
+    return UploadFileUseCase().upload(context, this, path, headers, params, id)
 }

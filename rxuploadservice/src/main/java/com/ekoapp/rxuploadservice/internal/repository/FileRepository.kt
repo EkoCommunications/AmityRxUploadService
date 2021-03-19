@@ -14,7 +14,7 @@ class FileRepository {
     fun upload(
         context: Context,
         uri: Uri,
-        action: String,
+        path: String,
         headers: Map<String, String>,
         params: Map<String, String>,
         id: String? = null
@@ -39,7 +39,7 @@ class FileRepository {
                             remoteDataStore.upload(
                                 it,
                                 fileProperties,
-                                action,
+                                path,
                                 headers,
                                 params,
                                 id

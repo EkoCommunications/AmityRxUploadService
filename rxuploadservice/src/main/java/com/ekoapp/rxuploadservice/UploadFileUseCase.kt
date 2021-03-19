@@ -10,11 +10,11 @@ class UploadFileUseCase {
     fun upload(
         context: Context,
         uri: Uri,
-        action: String,
+        path: String,
         headers: Map<String, String> = emptyMap(),
         params: Map<String, String> = emptyMap(),
         id: String? = null
     ): Flowable<FileProperties> {
-        return FileRepository().upload(context, uri, action, headers, params, id)
+        return FileRepository().upload(context, uri, path, headers, params, id)
     }
 }

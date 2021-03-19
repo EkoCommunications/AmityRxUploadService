@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             data?.data?.let { uri ->
                 uri.upload(
                     context = this,
-                    action = "upload-file",
+                    action = "file/upload-file",
                     headers = mapOf("x-eko-access-token" to accessToken)
                 )
                     .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
