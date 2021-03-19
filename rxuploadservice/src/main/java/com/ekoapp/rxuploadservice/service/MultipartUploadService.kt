@@ -1,6 +1,7 @@
 package com.ekoapp.rxuploadservice.service
 
 import com.ekoapp.rxuploadservice.FileProperties
+import com.ekoapp.rxuploadservice.RxUploadService
 import com.ekoapp.rxuploadservice.service.api.MultipartUploadApi
 import io.reactivex.subjects.PublishSubject
 import okhttp3.Interceptor
@@ -18,23 +19,20 @@ class MultipartUploadService {
 
     companion object {
 
-        private const val CONNECT_TIMEOUT_MILLIS = 30 * 1000
-        private const val READ_TIMEOUT_MILLIS = 60 * 1000
-        private const val WRITE_TIMEOUT_MILLIS = 10 * 60 * 1000
 
         private val calls = mutableMapOf<String, Call<ResponseBody>>()
         private val propertiesSubjects = mutableMapOf<String, PublishSubject<FileProperties>>()
 
-        fun init(baseUrl: String, interceptors: List<Interceptor>) {
+        fun init(baseUrl: String, settings: RxUploadService.Settings, interceptors: List<Interceptor>) {
             val httpClient = OkHttpClient.Builder()
                 .also {
                     interceptors.forEach { interceptor ->
                         it.addInterceptor(interceptor)
                     }
                 }
-                .connectTimeout(CONNECT_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
-                .readTimeout(READ_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
-                .writeTimeout(WRITE_TIMEOUT_MILLIS.toLong(), TimeUnit.MILLISECONDS)
+                .connectTimeout(settings.connectTimeOutMillis, TimeUnit.MILLISECONDS)
+                .readTimeout(settings.readTimeOutMillis, TimeUnit.MILLISECONDS)
+                .writeTimeout(settings.writeTimeOutMillis, TimeUnit.MILLISECONDS)
                 .build()
 
             retrofit = Retrofit.Builder()

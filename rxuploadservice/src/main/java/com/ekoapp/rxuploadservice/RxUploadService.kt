@@ -5,12 +5,20 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import okhttp3.Interceptor
 
+private const val DEFAULT_CONNECT_TIMEOUT_MILLIS: Long = 30 * 1000
+private const val DEFAULT_READ_TIMEOUT_MILLIS: Long = 60 * 1000
+private const val DEFAULT_WRITE_TIMEOUT_MILLIS: Long = 10 * 60 * 1000
+
 class RxUploadService {
 
     companion object {
 
-        fun init(baseUrl: String, interceptors: List<Interceptor> = emptyList()) {
-            MultipartUploadService.init(baseUrl, interceptors)
+        fun init(
+            baseUrl: String,
+            settings: Settings = Settings.build(),
+            interceptors: List<Interceptor> = emptyList()
+        ) {
+            MultipartUploadService.init(baseUrl, settings, interceptors)
         }
 
         fun properties(id: String): Flowable<FileProperties> {
@@ -20,6 +28,39 @@ class RxUploadService {
 
         fun cancel(id: String) {
             MultipartUploadService.cancel(id)
+        }
+    }
+
+    class Settings private constructor(
+        val connectTimeOutMillis: Long,
+        val readTimeOutMillis: Long,
+        val writeTimeOutMillis: Long
+    ) {
+
+        companion object Builder {
+
+            private var connectTimeOutMillis = DEFAULT_CONNECT_TIMEOUT_MILLIS
+            private var readTimeOutMillis = DEFAULT_READ_TIMEOUT_MILLIS
+            private var writeTimeOutMillis = DEFAULT_WRITE_TIMEOUT_MILLIS
+
+            fun connectTimeOut(connectTimeOutMillis: Long): Builder {
+                this.connectTimeOutMillis = connectTimeOutMillis
+                return this
+            }
+
+            fun readTimeOutMillis(readTimeOutMillis: Long): Builder {
+                this.readTimeOutMillis = readTimeOutMillis
+                return this
+            }
+
+            fun writeTimeOutMillis(writeTimeOutMillis: Long): Builder {
+                this.writeTimeOutMillis = writeTimeOutMillis
+                return this
+            }
+
+            fun build(): Settings {
+                return Settings(connectTimeOutMillis, readTimeOutMillis, writeTimeOutMillis)
+            }
         }
     }
 }
