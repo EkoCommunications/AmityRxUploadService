@@ -28,11 +28,32 @@ class FileRepository {
                 localDataStore.getFileSize(context, uri)
                     .flatMap {
                         return@flatMap when (it > MultipartUploadService.getSettings().maximumFileSize) {
-                            true -> Single.error<Long>(LimitExceededException())
+                            true -> Single.error<Long>(
+                                LimitExceededException(
+                                    String.format(
+                                        "a file size is %s, the maximum file size is %s",
+                                        it,
+                                        MultipartUploadService.getSettings().maximumFileSize
+                                    )
+                                )
+                            )
                             false -> Single.just(it)
                         }
                     },
-                localDataStore.getMimeType(context, uri),
+                localDataStore.getMimeType(context, uri)
+                    .flatMap {
+                        return@flatMap when (false) {
+                            true -> Single.error<String>(
+                                UnsupportedOperationException(
+                                    String.format(
+                                        "it doesn't support '%s' mime type",
+                                        it
+                                    )
+                                )
+                            )
+                            false -> Single.just(it)
+                        }
+                    },
                 Function3<String, Long, String, FileProperties> { fileName, fileSize, mimeType ->
                     FileProperties(
                         uri,
