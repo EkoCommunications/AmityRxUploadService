@@ -35,7 +35,7 @@ class FileLocalDataStore {
     private fun fileNameFromUri(context: Context, uri: Uri): String? {
         context.contentResolver.query(
             uri,
-            null,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
             null,
             null,
             null,
@@ -52,7 +52,7 @@ class FileLocalDataStore {
     private fun fileSizeFromUri(context: Context, uri: Uri): Long? {
         context.contentResolver.query(
             uri,
-            null,
+            arrayOf(OpenableColumns.SIZE),
             null,
             null,
             null,
