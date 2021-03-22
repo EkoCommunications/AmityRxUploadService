@@ -47,7 +47,7 @@ class FileRepository {
                             true -> Single.error<String>(
                                 UnsupportedOperationException(
                                     String.format(
-                                        "it doesn't support '%s' mime type",
+                                        "the library doesn't support '%s' mime type",
                                         it
                                     )
                                 )
