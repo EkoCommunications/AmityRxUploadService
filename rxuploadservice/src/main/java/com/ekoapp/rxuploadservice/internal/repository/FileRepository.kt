@@ -53,6 +53,9 @@ class FileRepository {
                                 id
                             )
                         }
-                }).distinct { it.progress }
+                })
+            .doOnTerminate { localDataStore.clearCache(context) }
+            .doOnCancel { /*do not clear cache here! just because the subscription is cancelled doesn't mean the upload is also cancel (silent upload!)*/ }
+            .distinct { it.progress }
     }
 }
