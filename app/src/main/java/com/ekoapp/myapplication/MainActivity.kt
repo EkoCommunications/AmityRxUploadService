@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     .doOnNext { Log.e("testtest", "doOnNext:" + Gson().toJson(it)) }
                     .doOnComplete { Log.e("testtest", "doOnComplete") }
-                    .doOnError { Log.e("testtest", "doOnError:" + it.message) }
+                    .doOnError { Log.e("testtest", "doOnError:$it") }
                     .subscribeOn(Schedulers.io())
                     .subscribe({}, {})
 

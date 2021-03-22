@@ -9,6 +9,7 @@ import android.util.Log
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
 class FileLocalDataStore {
@@ -66,14 +67,18 @@ class FileLocalDataStore {
     }
 
     private fun fileFromUri(context: Context, uri: Uri): File? {
-        return context.contentResolver.openInputStream(uri)
-            ?.use {
-                val directory = File(context.cacheDir, cacheDirectory)
-                directory.mkdirs()
-                val output = File(directory, UUID.randomUUID().toString())
-                it.copyTo(output.outputStream())
-                output
-            }
+        return try {
+            context.contentResolver.openInputStream(uri)
+                ?.use {
+                    val directory = File(context.cacheDir, cacheDirectory)
+                    directory.mkdirs()
+                    val output = File(directory, UUID.randomUUID().toString())
+                    it.copyTo(output.outputStream())
+                    output
+                }
+        } catch (e: FileNotFoundException) {
+            null
+        }
     }
 
     fun getMimeType(context: Context, uri: Uri): Single<String> {
@@ -83,7 +88,7 @@ class FileLocalDataStore {
                     Log.e("testtest", "mimeType:$mimeType")
                     it.onNext(mimeType)
                     it.onComplete()
-                }
+                } ?: run { it.onError(FileNotFoundException()) }
         }
     }
 
@@ -94,7 +99,7 @@ class FileLocalDataStore {
                     Log.e("testtest", "fileName:$fileName")
                     it.onNext(fileName)
                     it.onComplete()
-                }
+                } ?: run { it.onError(FileNotFoundException()) }
         }
     }
 
@@ -105,7 +110,7 @@ class FileLocalDataStore {
                     Log.e("testtest", "fileSize:$fileSize")
                     it.onNext(fileSize)
                     it.onComplete()
-                }
+                } ?: run { it.onError(FileNotFoundException()) }
         }
     }
 
@@ -124,7 +129,7 @@ class FileLocalDataStore {
                     )
                     it.onNext(file)
                     it.onComplete()
-                }
+                } ?: run { it.onError(FileNotFoundException()) }
         }
     }
 

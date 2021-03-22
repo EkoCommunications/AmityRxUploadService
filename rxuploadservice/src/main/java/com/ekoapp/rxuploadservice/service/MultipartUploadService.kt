@@ -14,25 +14,25 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 private lateinit var retrofit: Retrofit
+private lateinit var settings: RxUploadService.Settings
 
 class MultipartUploadService {
 
     companion object {
 
-
         private val calls = mutableMapOf<String, Call<ResponseBody>>()
         private val propertiesSubjects = mutableMapOf<String, PublishSubject<FileProperties>>()
 
-        fun init(baseUrl: String, settings: RxUploadService.Settings, interceptors: List<Interceptor>) {
+        fun init(baseUrl: String, baseSettings: RxUploadService.Settings, interceptors: List<Interceptor>) {
             val httpClient = OkHttpClient.Builder()
                 .also {
                     interceptors.forEach { interceptor ->
                         it.addInterceptor(interceptor)
                     }
                 }
-                .connectTimeout(settings.connectTimeOutMillis, TimeUnit.MILLISECONDS)
-                .readTimeout(settings.readTimeOutMillis, TimeUnit.MILLISECONDS)
-                .writeTimeout(settings.writeTimeOutMillis, TimeUnit.MILLISECONDS)
+                .connectTimeout(baseSettings.connectTimeOutMillis, TimeUnit.MILLISECONDS)
+                .readTimeout(baseSettings.readTimeOutMillis, TimeUnit.MILLISECONDS)
+                .writeTimeout(baseSettings.writeTimeOutMillis, TimeUnit.MILLISECONDS)
                 .build()
 
             retrofit = Retrofit.Builder()
@@ -41,10 +41,16 @@ class MultipartUploadService {
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
+
+            settings = baseSettings
         }
 
         fun getUploadApi(): MultipartUploadApi {
             return retrofit.create(MultipartUploadApi::class.java)
+        }
+
+        fun getSettings(): RxUploadService.Settings {
+            return settings
         }
 
         fun onRequest(call: Call<ResponseBody>, id: String?) {

@@ -36,7 +36,8 @@ class RxUploadService {
     class Settings private constructor(
         val connectTimeOutMillis: Long,
         val readTimeOutMillis: Long,
-        val writeTimeOutMillis: Long
+        val writeTimeOutMillis: Long,
+        val maximumFileSize: Int
     ) {
 
         companion object Builder {
@@ -67,7 +68,7 @@ class RxUploadService {
             }
 
             fun build(): Settings {
-                return Settings(connectTimeOutMillis, readTimeOutMillis, writeTimeOutMillis)
+                return Settings(connectTimeOutMillis, readTimeOutMillis, writeTimeOutMillis, maximumFileSize)
             }
         }
     }
