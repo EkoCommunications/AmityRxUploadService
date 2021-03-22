@@ -38,7 +38,7 @@ class RxUploadService {
         val readTimeOutMillis: Long,
         val writeTimeOutMillis: Long,
         val maximumFileSize: Int,
-        val supportedMimeTypes: Array<String>
+        val supportedMimeTypes: List<String>
     ) {
 
         companion object Builder {
@@ -47,9 +47,9 @@ class RxUploadService {
             private var readTimeOutMillis = DEFAULT_READ_TIMEOUT_MILLIS
             private var writeTimeOutMillis = DEFAULT_WRITE_TIMEOUT_MILLIS
             private var maximumFileSize = DEFAULT_MAXIMUM_FILE_SIZE
-            private var supportedMimeTypes = emptyArray<String>()
+            private var supportedMimeTypes = emptyList<String>()
 
-            fun connectTimeOut(connectTimeOutMillis: Long): Builder {
+            fun connectTimeOutMillis(connectTimeOutMillis: Long): Builder {
                 this.connectTimeOutMillis = connectTimeOutMillis
                 return this
             }
@@ -69,7 +69,7 @@ class RxUploadService {
                 return this
             }
 
-            fun supportedMimeTypes(supportedMimeTypes: Array<String>): Builder {
+            fun supportedMimeTypes(supportedMimeTypes: List<String>): Builder {
                 this.supportedMimeTypes = supportedMimeTypes
                 return this
             }
