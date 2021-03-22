@@ -42,7 +42,8 @@ class FileRepository {
                     },
                 localDataStore.getMimeType(context, uri)
                     .flatMap {
-                        return@flatMap when (false) {
+                        val supportedMimeTypes = MultipartUploadService.getSettings().supportedMimeTypes
+                        return@flatMap when (supportedMimeTypes.isNotEmpty() && !supportedMimeTypes.contains(it)) {
                             true -> Single.error<String>(
                                 UnsupportedOperationException(
                                     String.format(
