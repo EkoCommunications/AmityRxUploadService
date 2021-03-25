@@ -41,7 +41,7 @@ class FileRemoteDataStore {
                     FileWritingListener {
                     override fun onWrite(bytesWritten: Long, contentLength: Long) {
                         val progress =
-                            min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 100)
+                            min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 99)
 
                         it.onNext(fileProperties.apply {
                             this.bytesWritten = bytesWritten
@@ -87,6 +87,7 @@ class FileRemoteDataStore {
                         it.onNext(fileProperties.apply {
                             response.body()?.string().let { jsonString ->
                                 this.responseBody = JsonParser.parseString(jsonString)
+                                this.progress = 100
                             }
                         })
                     }
