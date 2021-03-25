@@ -10,6 +10,7 @@ import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.functions.Function3
+import java.util.*
 
 class FileRepository {
 
@@ -78,6 +79,6 @@ class FileRepository {
                 })
             .doOnTerminate { localDataStore.clearCache(context) }
             .doOnCancel { /*do not clear cache here! just because the subscription is cancelled doesn't mean the upload is also cancel (silent upload!)*/ }
-            .distinct { it.progress }
+            .distinct { Objects.hash(it.progress, it.responseBody) }
     }
 }

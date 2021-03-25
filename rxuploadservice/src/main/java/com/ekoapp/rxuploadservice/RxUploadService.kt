@@ -4,6 +4,7 @@ import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import okhttp3.Interceptor
+import java.util.*
 
 private const val DEFAULT_CONNECT_TIMEOUT_MILLIS: Long = 30 * 1000
 private const val DEFAULT_READ_TIMEOUT_MILLIS: Long = 60 * 1000
@@ -25,7 +26,7 @@ class RxUploadService {
         fun properties(id: String): Flowable<FileProperties> {
             return MultipartUploadService.properties(id)?.toFlowable(BackpressureStrategy.BUFFER)
                 ?: run { Flowable.never<FileProperties>() }
-                    .distinct { it.progress }
+                    .distinct { Objects.hash(it.progress, it.responseBody) }
         }
 
         fun cancel(id: String) {
