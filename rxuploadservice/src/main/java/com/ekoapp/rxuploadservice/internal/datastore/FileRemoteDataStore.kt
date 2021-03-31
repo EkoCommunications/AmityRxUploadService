@@ -3,6 +3,7 @@ package com.ekoapp.rxuploadservice.internal.datastore
 import com.ekoapp.rxuploadservice.FileProperties
 import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import com.ekoapp.rxuploadservice.service.api.MultipartUploadApi
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.reactivex.Flowable
 import okhttp3.MediaType
@@ -82,7 +83,10 @@ class FileRemoteDataStore {
 
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     response.errorBody()?.let { error ->
-                        it.onError(Exception(String.format("code:%s errorBody:%s", response.code(), error.string())))
+                        it.onError(Exception(JsonObject().apply {
+                            addProperty("errorCode", response.code())
+                            addProperty("errorBody", error.string())
+                        }.toString()))
                     } ?: run {
                         it.onNext(fileProperties.apply {
                             response.body()?.string().let { jsonString ->
