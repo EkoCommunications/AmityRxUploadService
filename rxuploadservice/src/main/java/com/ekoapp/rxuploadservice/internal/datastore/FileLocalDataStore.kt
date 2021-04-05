@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
+import android.webkit.MimeTypeMap
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
@@ -29,10 +30,19 @@ class FileLocalDataStore {
     }
 
     private fun mimeTypeFromUri(context: Context, uri: Uri): String? {
+        if (isFile(uri)) {
+            val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString()).toLowerCase(Locale.getDefault())
+            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        }
+
         return context.contentResolver.getType(uri)
     }
 
     private fun fileNameFromUri(context: Context, uri: Uri): String? {
+        if (isFile(uri)) {
+            return uri.path?.let { File(it).name }
+        }
+
         context.contentResolver.query(
             uri,
             arrayOf(OpenableColumns.DISPLAY_NAME),
@@ -50,6 +60,10 @@ class FileLocalDataStore {
     }
 
     private fun fileSizeFromUri(context: Context, uri: Uri): Long? {
+        if (isFile(uri)) {
+            return uri.path?.let { File(it).length() }
+        }
+
         context.contentResolver.query(
             uri,
             arrayOf(OpenableColumns.SIZE),
@@ -67,6 +81,10 @@ class FileLocalDataStore {
     }
 
     private fun fileFromUri(context: Context, uri: Uri): File? {
+        if (isFile(uri)) {
+            return uri.path?.let { File(it) }
+        }
+
         return try {
             context.contentResolver.openInputStream(uri)
                 ?.use {
