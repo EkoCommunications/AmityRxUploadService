@@ -3,7 +3,6 @@ package com.ekoapp.rxuploadservice.internal.repository
 import android.content.Context
 import android.net.Uri
 import android.os.LimitExceededException
-import android.util.Log
 import com.ekoapp.rxuploadservice.FileProperties
 import com.ekoapp.rxuploadservice.internal.datastore.FileLocalDataStore
 import com.ekoapp.rxuploadservice.internal.datastore.FileRemoteDataStore
@@ -68,7 +67,6 @@ class FileRepository {
                 .flatMapPublisher { fileProperties ->
                     localDataStore.getFile(context, uri)
                         .flatMapPublisher {
-                            Log.e("testtest", "upload1")
                             remoteDataStore.upload(
                                 it,
                                 fileProperties,
