@@ -1,5 +1,6 @@
 package com.ekoapp.rxuploadservice.internal.datastore
 
+import android.util.Log
 import com.ekoapp.rxuploadservice.FileProperties
 import com.ekoapp.rxuploadservice.service.MultipartUploadService
 import com.ekoapp.rxuploadservice.service.api.MultipartUploadApi
@@ -34,72 +35,93 @@ class FileRemoteDataStore {
         params: Map<String, Any>,
         id: String? = null
     ): Flowable<FileProperties> {
-        return Flowable.fromPublisher<FileProperties> {
-            val mediaType = fileProperties.mimeType.toMediaType()
-            val requestBody = file
-                .asRequestBody(mediaType)
-                .asProgressRequestBody(object :
-                    FileWritingListener {
-                    override fun onWrite(bytesWritten: Long, contentLength: Long) {
-                        val progress =
-                            min(floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(), 99)
+        Log.e("testtest", "upload2")
+        return try {
+            Log.e("testtest", "try")
+            Flowable.fromPublisher<FileProperties> {
+                Log.e("testtest", "fromPublisher")
+                val mediaType = fileProperties.mimeType.toMediaType()
+                val requestBody = file
+                    .asRequestBody(mediaType)
+                    .asProgressRequestBody(object :
+                        FileWritingListener {
+                        override fun onWrite(bytesWritten: Long, contentLength: Long) {
+                            Log.e("testtest", "onWrite")
+                            val progress =
+                                min(
+                                    floor(bytesWritten.toDouble() / contentLength.toDouble() * 100.toDouble()).toInt(),
+                                    99
+                                )
+                            Log.e("testtest", "progress:$progress")
+                            it.onNext(fileProperties.apply {
+                                this.bytesWritten = bytesWritten
+                                this.contentLength = contentLength
+                                this.progress = progress
+                            })
+                            Log.e("testtest", "onNext")
+                            MultipartUploadService.properties(id)?.onNext(fileProperties.apply {
+                                this.bytesWritten = bytesWritten
+                                this.contentLength = contentLength
+                                this.progress = progress
+                            })
+                            Log.e("testtest", "onNext")
+                        }
+                    })
+                Log.e("testtest", "requestBody")
+                val multipartBody = MultipartBody.Part.createFormData(
+                    "file",
+                    fileProperties.fileName,
+                    requestBody
+                )
+                Log.e("testtest", "multipartBody")
+                val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
+                Log.e("testtest", "MultipartUploadApi:$multipartUploadApi")
+                val call = multipartUploadApi.upload(
+                    path,
+                    headers,
+                    multipartBody,
+                    params.mapValues { param -> param.value.toString().toRequestBody() })
+                Log.e("testtest", "call")
+                MultipartUploadService.onRequest(call, id)
+                Log.e("testtest", "onRequest")
+                call.enqueue(object : Callback<ResponseBody> {
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        Log.e("testtest", "onFailure:$t")
+                        it.onError(t)
+                        it.onComplete()
+                        MultipartUploadService.onFailure(id)
+                    }
 
-                        it.onNext(fileProperties.apply {
-                            this.bytesWritten = bytesWritten
-                            this.contentLength = contentLength
-                            this.progress = progress
-                        })
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                        Log.e("testtest", "onResponse")
+                        response.errorBody()?.let { error ->
+                            Log.e("testtest", "errorBody!=null")
+                            it.onError(Exception(JsonObject().apply {
+                                addProperty("errorCode", response.code())
+                                addProperty("errorBody", error.string())
+                            }.toString()))
+                            Log.e("testtest", "onError")
+                        } ?: run {
+                            Log.e("testtest", "errorBody==null")
+                            it.onNext(fileProperties.apply {
+                                response.body()?.string().let { jsonString ->
+                                    this.responseBody = JsonParser.parseString(jsonString)
+                                    this.progress = 100
+                                }
+                            })
+                            Log.e("testtest", "onNext")
+                        }
 
-                        MultipartUploadService.properties(id)?.onNext(fileProperties.apply {
-                            this.bytesWritten = bytesWritten
-                            this.contentLength = contentLength
-                            this.progress = progress
-                        })
+                        it.onComplete()
+                        Log.e("testtest", "onComplete")
+                        MultipartUploadService.onResponse(id)
                     }
                 })
-
-            val multipartBody = MultipartBody.Part.createFormData(
-                "file",
-                fileProperties.fileName,
-                requestBody
-            )
-
-            val multipartUploadApi: MultipartUploadApi = MultipartUploadService.getUploadApi()
-
-            val call = multipartUploadApi.upload(
-                path,
-                headers,
-                multipartBody,
-                params.mapValues { param -> param.value.toString().toRequestBody() })
-
-            MultipartUploadService.onRequest(call, id)
-
-            call.enqueue(object : Callback<ResponseBody> {
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    it.onError(t)
-                    it.onComplete()
-                    MultipartUploadService.onFailure(id)
-                }
-
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    response.errorBody()?.let { error ->
-                        it.onError(Exception(JsonObject().apply {
-                            addProperty("errorCode", response.code())
-                            addProperty("errorBody", error.string())
-                        }.toString()))
-                    } ?: run {
-                        it.onNext(fileProperties.apply {
-                            response.body()?.string().let { jsonString ->
-                                this.responseBody = JsonParser.parseString(jsonString)
-                                this.progress = 100
-                            }
-                        })
-                    }
-
-                    it.onComplete()
-                    MultipartUploadService.onResponse(id)
-                }
-            })
+                Log.e("testtest", "enqueue")
+            }
+        } catch (e: Exception) {
+            Log.e("testtest", "catch:" + e.message)
+            Flowable.empty()
         }
     }
 
