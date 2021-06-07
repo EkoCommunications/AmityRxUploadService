@@ -15,8 +15,9 @@ class UploadFileUseCase {
         path: String,
         headers: Map<String, Any> = emptyMap(),
         params: Map<String, Any> = emptyMap(),
-        id: String? = null
+        id: String? = null,
+        multipartDataKey: String
     ): Flowable<FileProperties> {
-        return FileRepository().upload(context, uri, path, headers, params, id)
+        return FileRepository().upload(context, uri, path, headers, params, id, multipartDataKey)
     }
 }

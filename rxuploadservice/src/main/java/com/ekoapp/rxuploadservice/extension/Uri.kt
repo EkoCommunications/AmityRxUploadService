@@ -13,7 +13,8 @@ fun Uri.upload(
     path: String,
     headers: Map<String, Any> = emptyMap(),
     params: Map<String, Any> = emptyMap(),
-    id: String? = null
+    id: String? = null,
+    multipartDataKey: String = "file"
 ): Flowable<FileProperties> {
-    return UploadFileUseCase().upload(context, this, path, headers, params, id)
+    return UploadFileUseCase().upload(context, this, path, headers, params, id, multipartDataKey)
 }
