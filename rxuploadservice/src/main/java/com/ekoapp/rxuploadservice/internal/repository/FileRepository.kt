@@ -20,7 +20,8 @@ class FileRepository {
         path: String,
         headers: Map<String, Any>,
         params: Map<String, Any>,
-        id: String? = null
+        id: String? = null,
+        multipartDataKey: String
     ): Flowable<FileProperties> {
         val localDataStore = FileLocalDataStore()
         val remoteDataStore = FileRemoteDataStore()
@@ -73,7 +74,8 @@ class FileRepository {
                                 path,
                                 headers,
                                 params,
-                                id
+                                id,
+                                multipartDataKey
                             )
                         }
                 })

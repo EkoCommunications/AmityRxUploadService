@@ -32,7 +32,8 @@ class FileRemoteDataStore {
         path: String,
         headers: Map<String, Any>,
         params: Map<String, Any>,
-        id: String? = null
+        id: String? = null,
+        multipartDataKey: String
     ): Flowable<FileProperties> {
         return Flowable.fromPublisher<FileProperties> {
             val mediaType = fileProperties.mimeType.toMediaType()
@@ -59,7 +60,7 @@ class FileRemoteDataStore {
                 })
 
             val multipartBody = MultipartBody.Part.createFormData(
-                "file",
+                multipartDataKey,
                 fileProperties.fileName,
                 requestBody
             )
